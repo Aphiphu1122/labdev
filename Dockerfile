@@ -1,30 +1,21 @@
-# ใช้ Node.js เป็น Base Image
-FROM node:18-alpine AS builder
+FROM node:18-alpine AS base
 
-# กำหนด Working Directory
+# สร้างโฟลเดอร์ที่จะใช้เก็บโค้ดของคุณใน Docker image
 WORKDIR /app
 
-# คัดลอกไฟล์ที่จำเป็น
-COPY package.json package-lock.json ./
-RUN npm install
+COPY package*.json ./
 
-# คัดลอกโค้ดทั้งหมด
+# ติดตั้งแพ็คเกจที่จำเป็นและทำความสะอาดแคช
+RUN npm install --force
+
+# คัดลอกโค้ดของคุณไปยัง Docker image
 COPY . .
 
-# Build Next.js Project
+# สร้างและสร้างแอพ Next.js ของคุณ
 RUN npm run build
 
-# ใช้ Base Image สำหรับรัน Production
-FROM node:18-alpine AS runner
-
-# กำหนด Working Directory
-WORKDIR /app
-
-# คัดลอกไฟล์ที่สร้างจาก Stage ก่อนหน้า
-COPY --from=builder /app ./
-
-# เปิด Port สำหรับ Next.js
+# กำหนดพอร์ตที่แอพของคุณจะทำงานอยู่
 EXPOSE 3000
 
-# คำสั่งรัน Container
-CMD ["npm", "run", "start"]
+# คำสั่งที่ใช้เริ่มแอพ Next.js
+CMD ["npm", "run","dev"]
